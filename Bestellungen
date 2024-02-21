@@ -1,0 +1,42 @@
+BestellungenB = 
+VAR Bestellkopfdaten =
+    SELECTCOLUMNS(
+        EKKOSet,
+        "EBELN", EKKOSet[EBELN],
+        "LIFNR", EKKOSet[LIFNR]
+    )
+VAR Lieferantennamen =
+    SELECTCOLUMNS(
+        LFA1Set,
+        "LIFNR", LFA1Set[LIFNR],
+        "NAME1", LFA1Set[NAME1]
+    )
+VAR Lieferplane =
+    SELECTCOLUMNS(
+        EKETSet,
+        "EBELN", EKETSet[EBELN],
+        "EBELP", EKETSet[EBELP],
+        "ETENR", EKETSet[ETENR],
+        "EINDT", EKETSet[EINDT]
+    )
+VAR Wareneingange =
+    SELECTCOLUMNS(
+        EKBESet,
+        "EBELN", EKBESet[EBELN],
+        "EBELP", EKBESet[EBELP],
+        "BUDAT", EKBESet[BUDAT],
+        "MENGE", EKBESet[MENGE]
+    )
+// Hier fehlt die Logik, um diese verschiedenen Variablen zusammenzuführen, da DAX keine direkte Schleifenverarbeitung wie ABAP unterstützt.
+// Stattdessen müssen Beziehungen zwischen den Tabellen und geeignete DAX-Funktionen für die Datenzusammenführung genutzt werden.
+
+// Ein einfaches Beispiel, um zu demonstrieren, wie man mit RELATED und RELATEDTABLE arbeiten könnte, wenn Beziehungen festgelegt sind:
+ 
+RETURN
+ADDCOLUMNS(
+    Bestellkopfdaten,
+    "NAME1", LOOKUPVALUE(LFA1Set[NAME1], LFA1Set[Lifnr], [Lifnr]),
+    "Lieferdatum", CALCULATE(MIN(EKETSet[EINDT]), ALLEXCEPT(EKETSet, EKETSet[EBELN])),
+    "Menge", CALCULATE(SUM(EKBESet[MENGE]), ALLEXCEPT(EKBESet, EKBESet[EBELN])),
+    "Buchungsdatum", CALCULATE(MAX(EKBESet[BUDAT]), ALLEXCEPT(EKBESet, EKBESet[EBELN]))
+)
